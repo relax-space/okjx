@@ -1,0 +1,8 @@
+aiofiles
+aiohttp
+tqdm
+execjs
+hyper
+click
+requests
+urllib3
