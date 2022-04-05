@@ -41,9 +41,16 @@ https://subtitle.apdcdn.tc.qq.com/vipzj.video.tc.qq.com/o0035orc73u.mp4?vkey=372
 
 ## 注意点
 
-1. 通过u3m8下载的是图片,需要去掉前面212个字节,才能变成ts文件
-2. 有时响应为空, 解决方案: 用http2去请求HTTP20Adapter
-3. 时间花的最多的永远都是加密解密
+1. 合并视频: 中文乱码
+
+```
+# 意思是 把cmd命令行的字符集改成utf8
+out = subprocess.call(['chcp', '65001'], shell=True,
+                          stdout=subprocess.DEVNULL)
+```
+
+2. 通过u3m8下载的是图片,需要去掉前面212个字节,才能变成ts文件
+
 
 ## 引用
 

@@ -1,4 +1,3 @@
-
 import json
 import os
 import random
@@ -35,6 +34,13 @@ def read_json(file_path: str):
         return json.load(f)
 
 
+def encoding_to_utf8(os_name):
+    if os_name == 'linux' or os_name == 'darwin':
+        return
+    # 设置编码为utf8, 为了防止windows系统乱码
+    subprocess.run(['chcp', '65001'], shell=True, stdout=subprocess.DEVNULL)
+
+
 def get_ua():
     contents = read_json('relax/ua_fake.json')
     return random.choice(contents)
@@ -54,7 +60,11 @@ def get_random_16():
     return ''.join(random.sample('abcdefghijklmnopqrstuvwxyz1234567890', 16))
 
 
-def req_break(url: str, dst: str, headers: dict, session: Session, bytes: int = 1024) -> bool:
+def req_break(url: str,
+              dst: str,
+              headers: dict,
+              session: Session,
+              bytes: int = 1024) -> bool:
     # 断点续传下载 https://blog.csdn.net/qq_38534107/article/details/89721345
     response = session.get(url, stream=True)
     file_size = int(response.headers['content-length'])
@@ -69,8 +79,15 @@ def req_break(url: str, dst: str, headers: dict, session: Session, bytes: int = 
 
     size = 0
     desc = dst.rsplit(os.path.sep, 1)[1]
-    with tqdm(total=file_size, initial=first_byte, unit='B',
-              unit_scale=True, desc=desc,  leave=False, mininterval=1, colour='yellow', bar_format='{l_bar}{bar:10}{r_bar}') as pbar:
+    with tqdm(total=file_size,
+              initial=first_byte,
+              unit='B',
+              unit_scale=True,
+              desc=desc,
+              leave=True,
+              mininterval=1,
+              colour='yellow',
+              bar_format='{l_bar}{bar:10}{r_bar}') as pbar:
         req = session.get(url, headers=headers, stream=True)
         with open(dst, 'ab') as f:
             for chunk in req.iter_content(chunk_size=bytes):
@@ -81,7 +98,13 @@ def req_break(url: str, dst: str, headers: dict, session: Session, bytes: int = 
     return size == file_size
 
 
-def merge_video(os_name: str, content_list: list, parent_dir: str, source_path: str, target_file_name: str, target_path: str = '', is_long: bool = False):
+def merge_video(os_name: str,
+                content_list: list,
+                parent_dir: str,
+                source_path: str,
+                target_file_name: str,
+                target_path: str = '',
+                is_long: bool = False):
     '''
     is_long: 如果合并的文件太多,会有长度限制, 所以一般超过800个ts文件[如果用数字命名:1.ts,2.t3,3.ts...],我就会使用这个参数
     '''
@@ -96,8 +119,8 @@ def merge_video(os_name: str, content_list: list, parent_dir: str, source_path: 
         ts_str = '+'.join(content_list)
         bash_str = f'cd "{source_path_abs}" && copy /b {ts_str} "{target_file_abs}"'
         if is_long:
-            bash_file_path = os.path.join(
-                source_path_abs, f'{bash_file_name}.cmd')
+            bash_file_path = os.path.join(source_path_abs,
+                                          f'{bash_file_name}.bat')
             with open(bash_file_path, mode='w', encoding='utf8') as f:
                 f.write(bash_str)
             bash_str = bash_file_path
@@ -105,8 +128,8 @@ def merge_video(os_name: str, content_list: list, parent_dir: str, source_path: 
         ts_str = ' '.join(content_list)
         bash_str = f'cd "{source_path_abs}" && cat {ts_str} > "{target_file_abs}"'
         if is_long:
-            bash_file_path = os.path.join(
-                source_path_abs, f'{bash_file_name}.sh')
+            bash_file_path = os.path.join(source_path_abs,
+                                          f'{bash_file_name}.sh')
             with open(bash_file_path, mode='w', encoding='utf8') as f:
                 f.write(bash_str)
             bash_str = f'chmod +x {bash_file_path} && {bash_file_path}'

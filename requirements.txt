@@ -1,7 +1,7 @@
 aiofiles
 aiohttp
 tqdm
-execjs
+PyExecJS
 hyper
 click
 requests

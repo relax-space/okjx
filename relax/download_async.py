@@ -8,11 +8,15 @@ from tqdm import tqdm
 from relax.utils import bar_print
 
 
-async def req(sem: Semaphore, delete_212: bool, index: str, url: str, ts_folder_path: str, file_name: str,  headers: dict, session: ClientSession):
+async def req(sem: Semaphore, delete_212: bool, index: str, url: str,
+              ts_folder_path: str, file_name: str, headers: dict,
+              session: ClientSession):
     try:
         async with sem:
             async with session.get(url, headers=headers) as resp:
-                async with aiofiles.open(os.path.join(ts_folder_path, file_name), mode='wb') as f:
+                async with aiofiles.open(os.path.join(ts_folder_path,
+                                                      file_name),
+                                         mode='wb') as f:
                     res = await resp.read()
                     if delete_212:
                         res = res[212:]
@@ -23,7 +27,8 @@ async def req(sem: Semaphore, delete_212: bool, index: str, url: str, ts_folder_
         return '-1'
 
 
-async def download_ts(sem: Semaphore, raw_url: str, folder_name: str, file_name: str, ts_list: list, headers: dict):
+async def download_ts(sem: Semaphore, raw_url: str, folder_name: str,
+                      file_name: str, ts_list: list, headers: dict):
     exp_set = set()
     act_set = set()
     ts_folder_path = os.path.join(folder_name, file_name)
@@ -39,9 +44,15 @@ async def download_ts(sem: Semaphore, raw_url: str, folder_name: str, file_name:
             elif '.ts' not in url:
                 delete_212 = True
             exp_set.add(index)
-            tasks.append(req(sem, delete_212, index, url, ts_folder_path,
-                         f'{index}.ts', headers, session))
-        for i in tqdm(as_completed(tasks), desc=file_name, total=len(ts_list), leave=False, bar_format='{l_bar}{bar:10}{r_bar}', colour='yellow'):
+            tasks.append(
+                req(sem, delete_212, index, url, ts_folder_path, f'{index}.ts',
+                    headers, session))
+        for i in tqdm(as_completed(tasks),
+                      desc=file_name,
+                      total=len(ts_list),
+                      leave=True,
+                      bar_format='{l_bar}{bar:10}{r_bar}',
+                      colour='yellow'):
             act_set.add(await i)
     if exp_set != act_set:
         diff_set = exp_set - act_set
@@ -50,7 +61,8 @@ async def download_ts(sem: Semaphore, raw_url: str, folder_name: str, file_name:
     return []
 
 
-def download_start(sem: Semaphore, url: str, folder_name: str, file_name: str, ts_list: list, headers: dict):
+def download_start(sem: Semaphore, url: str, folder_name: str, file_name: str,
+                   ts_list: list, headers: dict):
 
     retry_list = get_event_loop().run_until_complete(
         download_ts(sem, url, folder_name, file_name, ts_list, headers))
