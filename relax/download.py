@@ -5,12 +5,11 @@ import time
 from asyncio import Semaphore
 from copy import deepcopy
 
-import execjs
-
+from relax.crypto_r import CryptoR
 from relax.download_async import download_start
 from relax.merge import merge_ts
-from relax.utils import (bar_print, color_print, extract_ts,
-                         get_url_domain, get_url_pre, req_break, session_r)
+from relax.utils import (bar_print, color_print, extract_ts, get_url_domain,
+                         get_url_pre, req_break, session_r)
 
 
 def get_1(url: str, headers: dict):
@@ -108,11 +107,9 @@ def get_5(raw_url: str, headers: dict):
     referer = get_url_pre(pre_url)
     new_headers.update({'referer': referer})
     shouquan_url = 'https://shouquan.laohutao.com/shouquan.php'
-    with open('js/crypto_m.js', mode='r', encoding='utf8') as f:
-        ctx = execjs.compile(f.read())
 
-    d = ctx.call('encrypt', f'{get_url_domain(pre_url)}|{t}',
-                 'dvyYRQlnPRCMdQSe', t)
+    d = CryptoR('dvyYRQlnPRCMdQSe',
+                t).encrypto(f'{get_url_domain(pre_url)}|{t}')
     resp = session_r.post(shouquan_url,
                           params={'t': t},
                           data={'d': d},
@@ -123,8 +120,7 @@ def get_5(raw_url: str, headers: dict):
         return '', '', ''
 
     # 第二步: 通过iv解密url_crypto
-    url = ctx.call('decrypt', url_crypto, '36606EE9A59DDCE2', t)
-    url = re.sub(r'[\s]', '', url)
+    url = CryptoR('36606EE9A59DDCE2', t).decrypto(url_crypto)
     return url, referer, urls
 
 

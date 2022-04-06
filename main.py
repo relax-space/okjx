@@ -39,6 +39,10 @@ def main():
         shutil.rmtree(os.path.join(folder_name, i['title']))
     color_print(f'所有成功 {round(time.time()-t1)}s')
 
+    for i in range(10, 0, -1):
+        print(f'\r将在{i}秒后,自动关闭\r', end='')
+        time.sleep(1)
+
 
 if __name__ == '__main__':
     main()

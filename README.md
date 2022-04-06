@@ -12,8 +12,7 @@
 
 ```
 ### 安装包
-1. 安装nodejs  `npm install crypto-js`
-2. 安装python  `pip install -r requirements.txt`
+1. 安装python  `pip install -r requirements.txt`
 
 ### 运行
 ```
