@@ -32,6 +32,7 @@ MANIFEST
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.
 *.manifest
 *.spec
+!okjx.spec
 
 # Installer logs
 pip-log.txt
@@ -130,3 +131,7 @@ dmypy.json
 node_modules
 temp/*
 data/*
+step/*
+!step/init.txt
+*.mp4
+assert/Output/*

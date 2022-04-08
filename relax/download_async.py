@@ -27,11 +27,11 @@ async def req(sem: Semaphore, delete_212: bool, index: str, url: str,
         return '-1'
 
 
-async def download_ts(sem: Semaphore, raw_url: str, folder_name: str,
+async def download_ts(sem: Semaphore, raw_url: str, temp_dir: str,
                       file_name: str, ts_list: list, headers: dict):
     exp_set = set()
     act_set = set()
-    ts_folder_path = os.path.join(folder_name, file_name)
+    ts_folder_path = os.path.join(temp_dir, file_name)
     tasks = []
     pre_url_ts = raw_url.rsplit('/', 1)[0]
     async with ClientSession(connector=TCPConnector(limit=40)) as session:
@@ -61,12 +61,12 @@ async def download_ts(sem: Semaphore, raw_url: str, folder_name: str,
     return []
 
 
-def download_start(sem: Semaphore, url: str, folder_name: str, file_name: str,
+def download_start(sem: Semaphore, url: str, temp_dir: str, file_name: str,
                    ts_list: list, headers: dict):
 
     retry_list = get_event_loop().run_until_complete(
-        download_ts(sem, url, folder_name, file_name, ts_list, headers))
+        download_ts(sem, url, temp_dir, file_name, ts_list, headers))
     if retry_list:
         get_event_loop().run_until_complete(
-            download_ts(sem, url, folder_name, file_name, retry_list, headers))
+            download_ts(sem, url, temp_dir, file_name, retry_list, headers))
     return retry_list

@@ -1,8 +1,8 @@
 aiofiles
 aiohttp
 tqdm
-hyper
 click
+httpx
 requests
 urllib3
 pycryptodome

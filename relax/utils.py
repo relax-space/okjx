@@ -3,10 +3,11 @@ import os
 import random
 import re
 import subprocess
+from asyncio.subprocess import PIPE
 
 from click import echo, style
 from requests import Session
-from tqdm.auto import tqdm
+from tqdm import tqdm
 from urllib3 import disable_warnings
 
 disable_warnings()
@@ -22,16 +23,22 @@ def color_print(content: str, fg: str = 'green'):
 
 
 def extract_ts(content: str):
-    return re.findall(r',\s+(.*?)\s+', content, re.S)
+    res = re.sub(r'#(.*?)\s+', '', content)
+    return re.split(r'\s+', res)
 
 
 def safe_str(raw: str):
-    return re.sub(r'[<>:"/\|?*]', '', raw)
+    return re.sub(r'[<>:"/\|?*\s]', '', raw)
 
 
 def read_json(file_path: str):
     with open(file_path, mode='r', encoding='utf8') as f:
         return json.load(f)
+
+
+def write_json(file_path: str, content: str):
+    with open(file_path, mode='w', encoding='utf8') as f:
+        json.dump(content, f)
 
 
 def encoding_to_utf8(os_name):
@@ -60,13 +67,9 @@ def get_random_16():
     return ''.join(random.sample('abcdefghijklmnopqrstuvwxyz1234567890', 16))
 
 
-def req_break(url: str,
-              dst: str,
-              headers: dict,
-              session: Session,
-              bytes: int = 1024) -> bool:
+def req_break(url: str, dst: str, headers: dict, bytes: int = 1024) -> bool:
     # 断点续传下载 https://blog.csdn.net/qq_38534107/article/details/89721345
-    response = session.get(url, stream=True)
+    response = session_r.get(url, headers, stream=True)
     file_size = int(response.headers['content-length'])
     if os.path.exists(dst):
         first_byte = os.path.getsize(dst)
@@ -88,7 +91,7 @@ def req_break(url: str,
               mininterval=1,
               colour='yellow',
               bar_format='{l_bar}{bar:10}{r_bar}') as pbar:
-        req = session.get(url, headers=headers, stream=True)
+        req = session_r.get(url, headers=headers, stream=True)
         with open(dst, 'ab') as f:
             for chunk in req.iter_content(chunk_size=bytes):
                 if chunk:
@@ -100,43 +103,44 @@ def req_break(url: str,
 
 def merge_video(os_name: str,
                 content_list: list,
-                parent_dir: str,
                 source_path: str,
                 target_file_name: str,
-                target_path: str = '',
-                is_long: bool = False):
+                target_dir: str = '',
+                is_long: bool = True):
     '''
     is_long: 如果合并的文件太多,会有长度限制, 所以一般超过800个ts文件[如果用数字命名:1.ts,2.t3,3.ts...],我就会使用这个参数
     '''
-    source_path_abs = os.path.join(parent_dir, source_path)
-    target_path_abs = os.path.join(parent_dir, target_path)
-    if not os.path.isdir(target_path_abs):
-        os.makedirs(target_path_abs)
-    target_file_abs = os.path.join(target_path_abs, target_file_name)
+    target_file_abs = os.path.join(target_dir, target_file_name)
     res = -1
     bash_file_name = 'ts_sh'
     if os_name == 'windows':
+        # 拷贝不同磁盘的时候, 完整路径都要加上
+        content_list = [f'{os.path.join(source_path,i)}' for i in content_list]
         ts_str = '+'.join(content_list)
-        bash_str = f'cd "{source_path_abs}" && copy /b {ts_str} "{target_file_abs}"'
+        bash_str = f'cd "{source_path}" && copy /b {ts_str} "{target_file_abs}"'
         if is_long:
-            bash_file_path = os.path.join(source_path_abs,
-                                          f'{bash_file_name}.bat')
+            bash_file_path = os.path.join(source_path, f'{bash_file_name}.bat')
             with open(bash_file_path, mode='w', encoding='utf8') as f:
                 f.write(bash_str)
             bash_str = bash_file_path
     elif os_name == 'linux' or os_name == 'darwin':
         ts_str = ' '.join(content_list)
-        bash_str = f'cd "{source_path_abs}" && cat {ts_str} > "{target_file_abs}"'
+        bash_str = f'cd "{source_path}" && cat {ts_str} > "{target_file_abs}"'
         if is_long:
-            bash_file_path = os.path.join(source_path_abs,
-                                          f'{bash_file_name}.sh')
+            bash_file_path = os.path.join(source_path, f'{bash_file_name}.sh')
             with open(bash_file_path, mode='w', encoding='utf8') as f:
                 f.write(bash_str)
             bash_str = f'chmod +x {bash_file_path} && {bash_file_path}'
 
     try:
-        res = subprocess.run(bash_str, shell=True, stdout=subprocess.DEVNULL)
-        return res.returncode
+        res = subprocess.run(bash_str, shell=True, stdout=PIPE, stderr=PIPE)
+        res_code = res.returncode
+        if res_code != 0:
+            color_print(
+                f'合并失败 {target_file_name} 错误 {res.stdout.decode("utf8")}',
+                'red')
+            return -1
+        return 0
     except Exception as e:
         color_print(f'合并失败 {target_file_name} {e}', 'red')
         return -1

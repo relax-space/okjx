@@ -1,6 +1,0 @@
-[
-    {
-        "title":"这个杀手不太冷静",
-        "url":"https://v.youku.com/v_show/id_XNTg1NTEzMTI4OA==.html?spm=a2hcb.12701310.app.5~5!3~5!3~5~5~5~5~5~5~A&s=fecf84bba1924298b632"
-    }
-]

@@ -16,7 +16,7 @@
 
 ### 运行
 ```
-python main.py
+python okjx.py
 ```
 
 
@@ -49,6 +49,19 @@ out = subprocess.call(['chcp', '65001'], shell=True,
 ```
 
 2. 通过u3m8下载的是图片,需要去掉前面212个字节,才能变成ts文件
+
+## 安装
+
+``` bash
+pip install pyinstaller
+pyinstaller -i assert/2.ico -D okjx.py
+修改main.spec文件
+pyinstaller -F okjx.spec --noconfirm
+
+
+signtool.exe sign /fd sha256 /f "C:\Program Files\OpenSSL-Win64\bin\cert\okjx.pfx" /p 1234  /t http://timestamp.comodoca.com/authenticode /v "D:\1.source\pythonpath\okjx\assert\Output\okjx.exe"
+
+```
 
 
 ## 引用
