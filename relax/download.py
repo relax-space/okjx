@@ -97,7 +97,7 @@ def get_4(raw_url: str, headers: dict):
     return t, id, api, key, url_crypto, url, urls
 
 
-def get_5(raw_url: str, headers: dict):
+def get_5(decrypt_key: str, raw_url: str, headers: dict):
     # 第一步: 创建并授权iv
     # req: https://shouquan.laohutao.com/shouquan.php?t=73cc003d898729c1
     t, id, api, key, url_crypto, pre_url, urls = get_4(raw_url, headers)
@@ -120,7 +120,7 @@ def get_5(raw_url: str, headers: dict):
         return '', '', ''
 
     # 第二步: 通过iv解密url_crypto
-    url = CryptoR('36606EE9A59DDCE2', t).decrypto(url_crypto)
+    url = CryptoR(decrypt_key, t).decrypto(url_crypto)
     return url, referer, urls
 
 
@@ -155,10 +155,10 @@ def get_6_2(retry_count: list, urls: list, pre_url: str, url: str,
     return ts_list
 
 
-def download_all(sem: Semaphore, raw_url: str, temp_dir: str, target_dir: str,
-                 file_name: str, headers: dict):
+def download_all(decrypt_key: str, sem: Semaphore, raw_url: str, temp_dir: str,
+                 target_dir: str, file_name: str, headers: dict):
     t1 = time.time()
-    url, pre_url, urls = get_5(raw_url, headers)
+    url, pre_url, urls = get_5(decrypt_key, raw_url, headers)
     if not url:
         return False
     t2 = time.time()

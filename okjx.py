@@ -24,6 +24,8 @@ def main():
                 break
         data['target_dir'] = target_dir
         write_json(config_name, data)
+    
+    decrypt_key=data['decrypt_key']
 
     exe_path = os.path.join(os.getcwd(), 'okjx.json')
     color_print(f'配置路径 {exe_path} \n输出路径 {target_dir}', 'yellow')
@@ -49,7 +51,7 @@ def main():
             os.makedirs(f1)
         suc = False
         try:
-            suc = download_all(sem, url, temp_dir, target_dir, title, headers)
+            suc = download_all(decrypt_key,sem, url, temp_dir, target_dir, title, headers)
             suc_list.append(suc)
         except Exception as e:
             color_print(f'存在异常 {title} {round(time.time()-t1)}s {e}', 'red')

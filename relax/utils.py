@@ -69,7 +69,7 @@ def get_random_16():
 
 def req_break(url: str, dst: str, headers: dict, bytes: int = 1024) -> bool:
     # 断点续传下载 https://blog.csdn.net/qq_38534107/article/details/89721345
-    response = session_r.get(url, headers, stream=True)
+    response = session_r.get(url, headers=headers, stream=True)
     file_size = int(response.headers['content-length'])
     if os.path.exists(dst):
         first_byte = os.path.getsize(dst)
