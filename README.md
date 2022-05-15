@@ -3,20 +3,14 @@
 总共5条线路, 目前只支持默认线路: 即1号线路
 
 ## 如何开始
-### 配置
-```
-    # 设置好下面参数即可, 第一个参数是电影名,第二个是电影地址, 可以一次下载多部
-    video_list = [
-        ('test2', 'https://v.qq.com/x/cover/mzc00200tgro986.html'),
-    ]
-
-```
 ### 安装包
 1. 安装python  `pip install -r requirements.txt`
 
 ### 运行
 ```
 python okjx.py
+输入存储路径(仅仅第一次): 例如: C:\Users\Administrator\Downloads
+输入要下载的视频路径: 多个用|分隔, 例如: https://v.qq.com/x/cover/mzc00200tgro986.html
 ```
 
 
